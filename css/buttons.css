@@ -1,0 +1,490 @@
+/* ============================================================
+   buttons.css — Microinteracciones Avanzadas para Botones
+   Objetivo: Efectos visuales atractivos y performantes
+   Especificaciones: Ripple, Hover animations, Transiciones suaves
+============================================================ */
+
+/* ============================================================
+   VARIABLES CSS PARA BOTONES
+============================================================ */
+:root {
+  /* Colores de ripple y efectos */
+  --ripple-color-dark: rgba(255, 255, 255, 0.6);    /* Para botones oscuros */
+  --ripple-color-light: rgba(0, 0, 0, 0.15);        /* Para botones claros */
+  
+  /* Duración de animaciones */
+  --ripple-duration: 600ms;
+  --hover-duration: 300ms;
+  --transition-duration: 250ms;
+  
+  /* Easing personalizado */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);        /* Snappy */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);      /* Material Design */
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Bounce */
+}
+
+/* ============================================================
+   ANIMACIONES KEYFRAMES
+============================================================ */
+
+/* Efecto Ripple expansivo */
+@keyframes ripple-effect {
+  0% {
+    width: 30px;
+    height: 30px;
+    opacity: 1;
+  }
+  100% {
+    width: 450px;
+    height: 450px;
+    opacity: 0;
+  }
+}
+
+/* Pulso sutil (alternativa a ripple) */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(35, 131, 226, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(35, 131, 226, 0);
+  }
+}
+
+/* Brillo de fondo */
+@keyframes shine-effect {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Elevación suave */
+@keyframes lift-up {
+  0% {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Escalado con bounce */
+@keyframes scale-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ============================================================
+   CLASE BASE: Efecto Hover Base
+============================================================ */
+.btn {
+  position: relative;
+  overflow: hidden;
+  will-change: transform, box-shadow;
+  transition: all var(--transition-duration) var(--ease-smooth);
+}
+
+/* Pseudo-elemento ::before para el efecto ripple */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 70%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+}
+
+/* Pseudo-elemento ::after para efectos secundarios */
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   EFECTO HOVER AVANZADO - Base para todos los botones
+============================================================ */
+.btn:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Animación ripple al hacer click */
+.btn:active::before {
+  animation: ripple-effect var(--ripple-duration) ease-out;
+}
+
+/* ============================================================
+   BOTÓN PRIMARY (.btn-primary)
+============================================================ */
+.btn-primary {
+  background: var(--c-black);
+  color: var(--c-white);
+  position: relative;
+  isolation: isolate; /* Para el z-index del ::after */
+}
+
+.btn-primary::before {
+  background: radial-gradient(
+    circle,
+    var(--ripple-color-dark) 0%,
+    transparent 70%
+  );
+}
+
+.btn-primary:hover {
+  background: #1a1a1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* Efecto shine para primary */
+.btn-primary::after {
+  animation: none;
+}
+
+/* ============================================================
+   BOTÓN GHOST (.btn-ghost)
+============================================================ */
+.btn-ghost {
+  color: var(--c-gray-600);
+  background: transparent;
+}
+
+.btn-ghost::before {
+  background: radial-gradient(
+    circle,
+    var(--ripple-color-light) 0%,
+    transparent 70%
+  );
+}
+
+.btn-ghost:hover {
+  color: var(--c-black);
+  background: rgba(0, 0, 0, 0.03);
+  box-shadow: none;
+}
+
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   BOTÓN OUTLINE (.btn-outline)
+============================================================ */
+.btn-outline {
+  border: 1.5px solid var(--c-gray-200);
+  color: var(--c-black);
+  background: transparent;
+  transition: all var(--transition-duration) var(--ease-smooth);
+}
+
+.btn-outline::before {
+  background: radial-gradient(
+    circle,
+    var(--ripple-color-light) 0%,
+    transparent 70%
+  );
+}
+
+.btn-outline:hover {
+  border-color: var(--c-black);
+  background: rgba(10, 10, 10, 0.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.btn-outline:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   BOTÓN FULL WIDTH (.btn-full)
+============================================================ */
+.btn-full {
+  width: 100%;
+}
+
+/* ============================================================
+   VARIACIONES DE TAMAÑO
+============================================================ */
+
+/* Botón Grande (.btn-lg) */
+.btn-lg {
+  padding: 0.8em 1.8em;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.btn-lg:hover {
+  transform: translateY(-3px) scale(1.03);
+}
+
+/* Botón Extra Grande (.btn-xl) */
+.btn-xl {
+  padding: 1em 2.2em;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+}
+
+.btn-xl:hover {
+  transform: translateY(-4px) scale(1.04);
+}
+
+/* ============================================================
+   EFECTOS ESPECIALES PARA COMBINACIONES
+============================================================ */
+
+/* btn-primary + btn-lg */
+.btn.btn-primary.btn-lg:hover {
+  background: #1a1a1a;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  transform: translateY(-3px) scale(1.03);
+}
+
+/* btn-primary + btn-xl */
+.btn.btn-primary.btn-xl:hover {
+  background: #0f0f0f;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  transform: translateY(-4px) scale(1.04);
+}
+
+/* btn-primary + btn-full */
+.btn.btn-primary.btn-full {
+  width: 100%;
+}
+
+.btn.btn-primary.btn-full:hover {
+  transform: translateY(-2px) scale(1.01);
+}
+
+/* ============================================================
+   ACCESIBILIDAD: Respetar prefers-reduced-motion
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn::before,
+  .btn::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    will-change: auto;
+  }
+
+  .btn:hover,
+  .btn:active {
+    transform: none;
+  }
+
+  .btn-lg:hover,
+  .btn-xl:hover {
+    transform: none;
+  }
+
+  .btn.btn-primary.btn-lg:hover,
+  .btn.btn-primary.btn-xl:hover {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   MOBILE OPTIMIZATIONS
+============================================================ */
+@media (hover: none) and (pointer: coarse) {
+  /* En dispositivos táctiles, reducir el transform para evitar movimiento excesivo */
+  .btn:hover {
+    transform: scale(1.01);
+  }
+
+  .btn-lg:hover,
+  .btn-xl:hover {
+    transform: scale(1.02);
+  }
+
+  /* Mantener sombra más sutil en mobile */
+  .btn-primary:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ============================================================
+   ESTADOS DE FOCO (Keyboard Navigation)
+============================================================ */
+.btn:focus-within {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* Evitar outline en click de mouse */
+.btn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ============================================================
+   TRANSICIONES DE TEXTO Y COLOR
+============================================================ */
+.btn {
+  transition-property: background, color, border-color, transform, box-shadow;
+  transition-duration: var(--transition-duration);
+  transition-timing-function: var(--ease-smooth);
+}
+
+/* Suavizar cambio de color en el texto */
+.btn-ghost,
+.btn-outline {
+  transition: color var(--transition-duration) var(--ease-smooth),
+              background var(--transition-duration) var(--ease-smooth),
+              border-color var(--transition-duration) var(--ease-smooth),
+              box-shadow var(--transition-duration) var(--ease-smooth),
+              transform var(--transition-duration) var(--ease-smooth);
+}
+
+/* ============================================================
+   PERFORMANCE OPTIMIZATIONS
+============================================================ */
+
+/* GPU acceleration para transforms */
+.btn {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* ============================================================
+   CROSS-BROWSER COMPATIBILITY
+============================================================ */
+
+/* Safari */
+.btn {
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* Firefox */
+.btn::before,
+.btn::after {
+  box-sizing: border-box;
+}
+
+/* Edge y Chrome */
+@supports (backdrop-filter: blur(1px)) {
+  .btn-primary:hover {
+    backdrop-filter: blur(0px);
+  }
+}
+
+/* ============================================================
+   ESTADOS ESPECIALES
+============================================================ */
+
+/* Estado deshabilitado */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn:disabled:hover {
+  box-shadow: inherit;
+}
+
+/* Estado active (para links simulando botones activos) */
+.btn.active {
+  font-weight: 700;
+}
+
+.btn.active.btn-primary {
+  background: var(--c-accent);
+}
+
+/* ============================================================
+   ANIMACIONES DE TEXTO (Para iconos o contenido interno)
+============================================================ */
+
+/* Cuando hay un arrow (→) dentro del botón */
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  transition: left var(--ripple-duration) var(--ease-out);
+}
+
+.btn:hover::after {
+  left: 100%;
+}
+
+/* ============================================================
+   COMENTARIOS DE MANTENIMIENTO
+============================================================ */
+/*
+ * NOTAS PARA FUTURA MANTENIMIENTO:
+ * 
+ * 1. El efecto ripple usa ::before con position absolute
+ *    Se anima al hacer click (:active)
+ * 
+ * 2. La animación shine usa ::after para crear efecto de brillo
+ *    Navega de izquierda a derecha en hover
+ * 
+ * 3. Se usan variables CSS para fácil personalización
+ *    Cambiar --ripple-duration, --hover-duration, etc. afecta globalmente
+ * 
+ * 4. will-change se usa únicamente en .btn base
+ *    Evita aplicarlo en ::before/::after para no afectar rendimiento
+ * 
+ * 5. @media (prefers-reduced-motion) desactiva todas las animaciones
+ *    Importante para accesibilidad
+ * 
+ * 6. Usar transform en lugar de left/top/width/height
+ *    Garantiza mejor rendimiento (capa de composición)
+ * 
+ * 7. backface-visibility: hidden previene parpadeos en animaciones
+ *    Especialmente importante en Safari
+ */
