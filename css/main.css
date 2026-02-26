@@ -1022,3 +1022,143 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .form-wrapper { padding: var(--sp-md); }
   .footer-bottom { flex-direction: column; text-align: center; }
 }
+
+/* ============================================================
+   NAVBAR BEHAVIOR - Dev 2
+   Estilos dinámicos al hacer scroll
+============================================================ */
+
+/* Mejorar transiciones del navbar existente */
+.site-header {
+  transition: 
+    background-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estado cuando se hace scroll */
+.site-header.navbar-scrolled {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Animación suave del logo al hacer scroll */
+.site-header.navbar-scrolled .brand {
+  transform: scale(0.95);
+  transition: transform 300ms ease;
+}
+
+/* Efecto en los enlaces del nav */
+.site-header.navbar-scrolled .nav-link {
+  color: var(--c-black);
+}
+
+/* Sombra dinámica más pronunciada */
+.site-header.navbar-scrolled::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 0, 0, 0.1) 50%,
+    transparent
+  );
+  opacity: 0;
+  animation: fadeInBorder 400ms ease forwards;
+}
+
+@keyframes fadeInBorder {
+  to { opacity: 1; }
+}
+
+/* Transición suave para el contenedor del navbar */
+.navbar {
+  transition: padding 350ms ease;
+}
+
+.site-header.navbar-scrolled .navbar {
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+}
+
+/* Efecto hover mejorado en navbar scrolled */
+.site-header.navbar-scrolled .nav-link:hover {
+  background: rgba(35, 131, 226, 0.08);
+  color: var(--c-accent);
+}
+
+/* ============================================================
+   TEAM SECTION - Dev 2
+============================================================ */
+.team-section {
+  padding: var(--sp-xl) var(--sp-md);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.team-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--sp-md);
+  background: var(--c-white);
+  border: 2px solid var(--c-gray-200);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: all 300ms ease;
+}
+
+.team-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--c-accent);
+}
+
+.team-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--c-accent) 0%, #7c3aed 100%);
+  color: var(--c-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.team-card h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.team-role {
+  font-size: 0.9rem;
+  color: var(--c-accent);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.team-link {
+  font-size: 0.9rem;
+  color: var(--c-accent);
+  font-weight: 600;
+}
