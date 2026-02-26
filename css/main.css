@@ -1040,7 +1040,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 /* ============================================================
    TESTIMONIAL CARDS - Efecto Hover Avanzado con Elevación 3D
    Cambios: sombra multi-layer, elevación mayor,
-   GPU acceleration con transform 3D
+   GPU acceleration con transform 3D 11111111
 ============================================================ */
 .testimonial-card {
   padding: var(--sp-md);
