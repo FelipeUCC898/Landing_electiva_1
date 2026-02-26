@@ -311,3 +311,40 @@
   if (ctaMain)      ctaMain.addEventListener('click', handleCta);
   if (ctaSecondary) ctaSecondary.addEventListener('click', handleCta);
 })();
+
+
+/* ============================================================
+   8. NAVBAR BEHAVIOR - Dev 2
+   Comportamiento dinámico del navbar al hacer scroll
+============================================================ */
+(function initNavbarBehavior() {
+  const header = document.getElementById('site-header');
+  if (!header) return;
+
+  const SCROLL_THRESHOLD = 80; // Punto donde cambia el estilo
+
+  function updateNavbarStyle() {
+    const scrollY = window.scrollY;
+    
+    if (scrollY > SCROLL_THRESHOLD) {
+      header.classList.add('navbar-scrolled');
+    } else {
+      header.classList.remove('navbar-scrolled');
+    }
+  }
+
+  // Escuchar scroll con throttle para mejor rendimiento
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        updateNavbarStyle();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  // Estado inicial
+  updateNavbarStyle();
+})();
