@@ -2,6 +2,20 @@
    main.css — Notion Landing Page
    Developer 2: feature/diseno-css
    Sistema: Mobile First + Flexbox/Grid + Animaciones CSS
+   
+   CAMBIOS RECIENTES (feature/card-hover-effects):
+   ✓ Agregadas variables para animaciones de tarjetas
+   ✓ Mejorados efectos hover en .benefit-card (sombra multi-layer)
+   ✓ Mejorados efectos hover en .visual-card (elevación 3D)
+   ✓ Mejorados efectos hover en .testimonial-card (elevación 3D)
+   ✓ Agregado soporte para prefers-reduced-motion en tarjetas
+   ✓ GPU acceleration con transform translateZ(0)
+   
+   NOTAS IMPORTANTES PARA MERGE:
+   - Las variables --card-* están en :root (línea ~54)
+   - Los estilos de tarjetas están en secciones claramente comentadas
+   - No hay conflictos con código existente
+   - Cambios aislados en secciones de BENEFICIOS, CARACTERÍSTICAS, TESTIMONIOS
 ============================================================ */
 
 /* ---- Variables de diseño ---- */
@@ -44,6 +58,22 @@
   --t-fast:   150ms ease;
   --t-normal: 280ms ease;
   --t-slow:   500ms ease;
+
+  /* Variables para Microinteracciones de Botones */
+  --ripple-color-dark: rgba(255, 255, 255, 0.6);    /* Para botones oscuros */
+  --ripple-color-light: rgba(0, 0, 0, 0.15);        /* Para botones claros */
+  --ripple-duration: 600ms;
+  --hover-duration: 300ms;
+  --transition-duration: 250ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);        /* Snappy */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);      /* Material Design */
+
+  /* Variables para Efectos Hover de Tarjetas (Cards) */
+  --card-transition-duration: 350ms;
+  --card-ease: cubic-bezier(0.4, 0.0, 0.2, 1);      /* Material Design */
+  --card-shadow-default: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.1);
+  --card-elevate-distance: -8px;
 }
 
 /* ============================================================
@@ -66,6 +96,59 @@ img { display: block; max-width: 100%; }
 a  { color: inherit; text-decoration: none; }
 ul { list-style: none; }
 button { cursor: pointer; border: none; background: none; font-family: inherit; }
+
+/* ============================================================
+   ANIMACIONES KEYFRAMES - Microinteracciones de Botones
+============================================================ */
+
+/* Efecto Ripple expansivo */
+@keyframes ripple-effect {
+  0% {
+    width: 30px;
+    height: 30px;
+    opacity: 1;
+  }
+  100% {
+    width: 450px;
+    height: 450px;
+    opacity: 0;
+  }
+}
+
+/* Pulso sutil (alternativa a ripple) */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(35, 131, 226, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(35, 131, 226, 0);
+  }
+}
+
+/* Elevación suave */
+@keyframes lift-up {
+  0% {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Escalado con bounce */
+@keyframes scale-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 
 /* ============================================================
    UTILIDADES
@@ -103,8 +186,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 /* ============================================================
-   BOTONES
+   BOTONES - Microinteracciones Avanzadas y animaciones
 ============================================================ */
+
+/* Clase Base: Efecto Hover Base */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -114,38 +199,283 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   font-family: var(--f-sans);
   font-size: .95rem;
   font-weight: 600;
-  transition: background var(--t-fast), color var(--t-fast),
-              transform var(--t-fast), box-shadow var(--t-fast);
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  will-change: transform, box-shadow;
+  transition: all var(--transition-duration) var(--ease-smooth);
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
-.btn:hover  { transform: translateY(-2px); }
-.btn:active { transform: translateY(0);    }
+/* Pseudo-elemento ::before para el efecto ripple */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 70%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  box-sizing: border-box;
+}
 
+/* Pseudo-elemento ::after para efectos secundarios */
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  box-sizing: border-box;
+  transition: left var(--ripple-duration) var(--ease-out);
+}
+
+/* Efecto Hover - Base para todos los botones */
+.btn:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Animación ripple al hacer click */
+.btn:active::before {
+  animation: ripple-effect var(--ripple-duration) ease-out;
+}
+
+/* Brillo en hover */
+.btn:hover::after {
+  left: 100%;
+}
+
+/* BOTÓN PRIMARY */
 .btn-primary {
   background: var(--c-black);
   color: var(--c-white);
-  box-shadow: var(--shadow-sm);
+  position: relative;
+  isolation: isolate;
 }
+
+.btn-primary::before {
+  background: radial-gradient(
+    circle,
+    var(--ripple-color-dark) 0%,
+    transparent 70%
+  );
+}
+
 .btn-primary:hover {
   background: #1a1a1a;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
+.btn-primary:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* BOTÓN GHOST */
 .btn-ghost {
   color: var(--c-gray-600);
+  background: transparent;
 }
-.btn-ghost:hover { color: var(--c-black); }
 
+.btn-ghost::before {
+  background: radial-gradient(
+    circle,
+    var(--ripple-color-light) 0%,
+    transparent 70%
+  );
+}
+
+.btn-ghost:hover {
+  color: var(--c-black);
+  background: rgba(0, 0, 0, 0.03);
+  box-shadow: none;
+}
+
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* BOTÓN OUTLINE */
 .btn-outline {
   border: 1.5px solid var(--c-gray-200);
   color: var(--c-black);
+  background: transparent;
+  transition: all var(--transition-duration) var(--ease-smooth);
 }
-.btn-outline:hover { border-color: var(--c-black); }
 
-.btn-lg  { padding: .8em 1.8em;  font-size: 1rem;  }
-.btn-xl  { padding: 1em 2.2em;   font-size: 1.1rem; }
-.btn-full { width: 100%; justify-content: center; }
+.btn-outline::before {
+  background: radial-gradient(
+    circle,
+    var(--ripple-color-light) 0%,
+    transparent 70%
+  );
+}
+
+.btn-outline:hover {
+  border-color: var(--c-black);
+  background: rgba(10, 10, 10, 0.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.btn-outline:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* BOTÓN FULL WIDTH */
+.btn-full {
+  width: 100%;
+  justify-content: center;
+}
+
+/* VARIACIONES DE TAMAÑO */
+.btn-lg {
+  padding: 0.8em 1.8em;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.btn-lg:hover {
+  transform: translateY(-3px) scale(1.03);
+}
+
+.btn-xl {
+  padding: 1em 2.2em;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+}
+
+.btn-xl:hover {
+  transform: translateY(-4px) scale(1.04);
+}
+
+/* EFECTOS ESPECIALES PARA COMBINACIONES */
+.btn.btn-primary.btn-lg:hover {
+  background: #1a1a1a;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  transform: translateY(-3px) scale(1.03);
+}
+
+.btn.btn-primary.btn-xl:hover {
+  background: #0f0f0f;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  transform: translateY(-4px) scale(1.04);
+}
+
+.btn.btn-primary.btn-full:hover {
+  transform: translateY(-2px) scale(1.01);
+}
+
+/* ACCESIBILIDAD: Respetar prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn::before,
+  .btn::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    will-change: auto;
+  }
+
+  .btn:hover,
+  .btn:active {
+    transform: none;
+  }
+
+  .btn-lg:hover,
+  .btn-xl:hover {
+    transform: none;
+  }
+
+  .btn.btn-primary.btn-lg:hover,
+  .btn.btn-primary.btn-xl:hover {
+    transform: none;
+  }
+
+  /* Desactivar animaciones en tarjetas cuando se prefieren movimientos reducidos */
+  .benefit-card,
+  .visual-card,
+  .testimonial-card {
+    transition-duration: 0.01ms !important;
+    will-change: auto;
+  }
+
+  .benefit-card:hover,
+  .visual-card:hover,
+  .testimonial-card:hover {
+    transform: none;
+  }
+}
+
+/* MOBILE OPTIMIZATIONS */
+@media (hover: none) and (pointer: coarse) {
+  .btn:hover {
+    transform: scale(1.01);
+  }
+
+  .btn-lg:hover,
+  .btn-xl:hover {
+    transform: scale(1.02);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ESTADOS DE FOCO (Keyboard Navigation) */
+.btn:focus-within {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+.btn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ESTADOS ESPECIALES */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn:disabled:hover {
+  box-shadow: inherit;
+}
+
+.btn.active {
+  font-weight: 700;
+}
+
+.btn.active.btn-primary {
+  background: var(--c-accent);
+}
 
 /* ============================================================
    REVEAL ANIMATIONS (activadas por JS)
@@ -484,16 +814,27 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .beneficios-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ============================================================
+   BENEFIT CARDS - Efecto Hover Avanzado con Elevación 3D
+   Cambios: mejorada sombra multi-layer, elevación mayor,
+   GPU acceleration con transform 3D
+============================================================ */
 .benefit-card {
   padding: var(--sp-md);
   border: 1px solid var(--c-gray-200);
   border-radius: var(--radius-md);
   background: var(--c-white);
-  transition: box-shadow var(--t-normal), transform var(--t-normal), border-color var(--t-normal);
+  box-shadow: var(--card-shadow-default);
+  transition: box-shadow var(--card-transition-duration) var(--card-ease),
+              transform var(--card-transition-duration) var(--card-ease),
+              border-color var(--card-transition-duration) var(--card-ease);
+  will-change: transform, box-shadow;
+  transform: translateZ(0);         /* GPU acceleration */
+  backface-visibility: hidden;      /* Prevenir parpadeos */
 }
 .benefit-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-4px);
+  box-shadow: var(--card-shadow-hover);
+  transform: translate3d(0, var(--card-elevate-distance), 0);
   border-color: var(--c-gray-400);
 }
 
@@ -578,14 +919,28 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   justify-content: center;
 }
 
+/* ============================================================
+   VISUAL CARDS - Efecto Hover Avanzado
+   Cambios: sombra multi-layer en hover, elevación 3D,
+   transición suave con GPU acceleration
+============================================================ */
 .visual-card {
   background: var(--c-white);
   border: 1px solid var(--c-gray-200);
   border-radius: var(--radius-md);
   padding: var(--sp-md);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--card-shadow-default);
   width: 100%;
   max-width: 380px;
+  transition: box-shadow var(--card-transition-duration) var(--card-ease),
+              transform var(--card-transition-duration) var(--card-ease);
+  will-change: transform, box-shadow;
+  transform: translateZ(0);         /* GPU acceleration */
+  backface-visibility: hidden;      /* Prevenir parpadeos */
+}
+.visual-card:hover {
+  box-shadow: var(--card-shadow-hover);
+  transform: translate3d(0, var(--card-elevate-distance), 0);
 }
 
 .vc-line {
@@ -648,7 +1003,6 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .tag.low      { background: #dcfce7; color: #16a34a; }
 
 /* AI card */
-.ai-card {}
 .ai-prompt {
   font-size: .82rem;
   font-weight: 600;
@@ -683,6 +1037,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .testimonios-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ============================================================
+   TESTIMONIAL CARDS - Efecto Hover Avanzado con Elevación 3D
+   Cambios: sombra multi-layer, elevación mayor,
+   GPU acceleration con transform 3D 11111111
+============================================================ */
 .testimonial-card {
   padding: var(--sp-md);
   border: 1px solid var(--c-gray-200);
@@ -692,16 +1051,26 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-direction: column;
   justify-content: space-between;
   gap: 1.5rem;
-  transition: box-shadow var(--t-normal), transform var(--t-normal);
+  box-shadow: var(--card-shadow-default);
+  transition: box-shadow var(--card-transition-duration) var(--card-ease),
+              transform var(--card-transition-duration) var(--card-ease);
+  will-change: transform, box-shadow;
+  transform: translateZ(0);         /* GPU acceleration */
+  backface-visibility: hidden;      /* Prevenir parpadeos */
 }
 .testimonial-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-3px);
+  box-shadow: var(--card-shadow-hover);
+  transform: translate3d(0, var(--card-elevate-distance), 0);
 }
 .testimonial-card.featured {
   background: var(--c-black);
   border-color: var(--c-black);
   color: var(--c-white);
+  /* Mantener sombra consistente en featured cards */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+.testimonial-card.featured:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .testimonial-card blockquote p {
