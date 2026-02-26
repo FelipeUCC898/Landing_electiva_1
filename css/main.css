@@ -2,6 +2,20 @@
    main.css — Notion Landing Page
    Developer 2: feature/diseno-css
    Sistema: Mobile First + Flexbox/Grid + Animaciones CSS
+   
+   CAMBIOS RECIENTES (feature/card-hover-effects):
+   ✓ Agregadas variables para animaciones de tarjetas
+   ✓ Mejorados efectos hover en .benefit-card (sombra multi-layer)
+   ✓ Mejorados efectos hover en .visual-card (elevación 3D)
+   ✓ Mejorados efectos hover en .testimonial-card (elevación 3D)
+   ✓ Agregado soporte para prefers-reduced-motion en tarjetas
+   ✓ GPU acceleration con transform translateZ(0)
+   
+   NOTAS IMPORTANTES PARA MERGE:
+   - Las variables --card-* están en :root (línea ~54)
+   - Los estilos de tarjetas están en secciones claramente comentadas
+   - No hay conflictos con código existente
+   - Cambios aislados en secciones de BENEFICIOS, CARACTERÍSTICAS, TESTIMONIOS
 ============================================================ */
 
 /* ---- Variables de diseño ---- */
@@ -53,6 +67,13 @@
   --transition-duration: 250ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);        /* Snappy */
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);      /* Material Design */
+
+  /* Variables para Efectos Hover de Tarjetas (Cards) */
+  --card-transition-duration: 350ms;
+  --card-ease: cubic-bezier(0.4, 0.0, 0.2, 1);      /* Material Design */
+  --card-shadow-default: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.1);
+  --card-elevate-distance: -8px;
 }
 
 /* ============================================================
@@ -165,7 +186,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 /* ============================================================
-   BOTONES - Microinteracciones Avanzadas
+   BOTONES - Microinteracciones Avanzadas y animaciones
 ============================================================ */
 
 /* Clase Base: Efecto Hover Base */
@@ -393,6 +414,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
   .btn.btn-primary.btn-lg:hover,
   .btn.btn-primary.btn-xl:hover {
+    transform: none;
+  }
+
+  /* Desactivar animaciones en tarjetas cuando se prefieren movimientos reducidos */
+  .benefit-card,
+  .visual-card,
+  .testimonial-card {
+    transition-duration: 0.01ms !important;
+    will-change: auto;
+  }
+
+  .benefit-card:hover,
+  .visual-card:hover,
+  .testimonial-card:hover {
     transform: none;
   }
 }
@@ -779,16 +814,27 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .beneficios-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ============================================================
+   BENEFIT CARDS - Efecto Hover Avanzado con Elevación 3D
+   Cambios: mejorada sombra multi-layer, elevación mayor,
+   GPU acceleration con transform 3D
+============================================================ */
 .benefit-card {
   padding: var(--sp-md);
   border: 1px solid var(--c-gray-200);
   border-radius: var(--radius-md);
   background: var(--c-white);
-  transition: box-shadow var(--t-normal), transform var(--t-normal), border-color var(--t-normal);
+  box-shadow: var(--card-shadow-default);
+  transition: box-shadow var(--card-transition-duration) var(--card-ease),
+              transform var(--card-transition-duration) var(--card-ease),
+              border-color var(--card-transition-duration) var(--card-ease);
+  will-change: transform, box-shadow;
+  transform: translateZ(0);         /* GPU acceleration */
+  backface-visibility: hidden;      /* Prevenir parpadeos */
 }
 .benefit-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-4px);
+  box-shadow: var(--card-shadow-hover);
+  transform: translate3d(0, var(--card-elevate-distance), 0);
   border-color: var(--c-gray-400);
 }
 
@@ -873,14 +919,28 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   justify-content: center;
 }
 
+/* ============================================================
+   VISUAL CARDS - Efecto Hover Avanzado
+   Cambios: sombra multi-layer en hover, elevación 3D,
+   transición suave con GPU acceleration
+============================================================ */
 .visual-card {
   background: var(--c-white);
   border: 1px solid var(--c-gray-200);
   border-radius: var(--radius-md);
   padding: var(--sp-md);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--card-shadow-default);
   width: 100%;
   max-width: 380px;
+  transition: box-shadow var(--card-transition-duration) var(--card-ease),
+              transform var(--card-transition-duration) var(--card-ease);
+  will-change: transform, box-shadow;
+  transform: translateZ(0);         /* GPU acceleration */
+  backface-visibility: hidden;      /* Prevenir parpadeos */
+}
+.visual-card:hover {
+  box-shadow: var(--card-shadow-hover);
+  transform: translate3d(0, var(--card-elevate-distance), 0);
 }
 
 .vc-line {
@@ -943,7 +1003,6 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .tag.low      { background: #dcfce7; color: #16a34a; }
 
 /* AI card */
-.ai-card {}
 .ai-prompt {
   font-size: .82rem;
   font-weight: 600;
@@ -978,6 +1037,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .testimonios-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ============================================================
+   TESTIMONIAL CARDS - Efecto Hover Avanzado con Elevación 3D
+   Cambios: sombra multi-layer, elevación mayor,
+   GPU acceleration con transform 3D
+============================================================ */
 .testimonial-card {
   padding: var(--sp-md);
   border: 1px solid var(--c-gray-200);
@@ -987,16 +1051,26 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-direction: column;
   justify-content: space-between;
   gap: 1.5rem;
-  transition: box-shadow var(--t-normal), transform var(--t-normal);
+  box-shadow: var(--card-shadow-default);
+  transition: box-shadow var(--card-transition-duration) var(--card-ease),
+              transform var(--card-transition-duration) var(--card-ease);
+  will-change: transform, box-shadow;
+  transform: translateZ(0);         /* GPU acceleration */
+  backface-visibility: hidden;      /* Prevenir parpadeos */
 }
 .testimonial-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-3px);
+  box-shadow: var(--card-shadow-hover);
+  transform: translate3d(0, var(--card-elevate-distance), 0);
 }
 .testimonial-card.featured {
   background: var(--c-black);
   border-color: var(--c-black);
   color: var(--c-white);
+  /* Mantener sombra consistente en featured cards */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+.testimonial-card.featured:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .testimonial-card blockquote p {
